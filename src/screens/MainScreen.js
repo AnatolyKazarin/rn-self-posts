@@ -1,10 +1,9 @@
-import React from "react"
-import { View, StyleSheet, Text, Button, FlatList } from "react-native"
+import React, { useEffect } from "react"
 import { HeaderButtons, Item } from "react-navigation-header-buttons"
-import { DATA } from "../data"
-import { Post } from "../components/Post"
+import { useDispatch, useSelector } from "react-redux"
+import { PostList } from "../components/PostList"
 import { AppHeaderIcon } from "../components/AppHeaderIcon"
-import { Header } from "react-native/Libraries/NewAppScreen"
+import { loadPosts } from "../store/actions/post"
 
 export const MainScreen = ({ navigation }) => {
   const openPostHandler = post => {
@@ -14,18 +13,18 @@ export const MainScreen = ({ navigation }) => {
       booked: post.booked,
     })
   }
-  return (
-    <View style={styles.wrapper}>
-      <FlatList
-        data={DATA}
-        keyExtractor={post => post.id.toString()}
-        renderItem={({ item }) => <Post post={item} onOpen={openPostHandler} />}
-      />
-    </View>
-  )
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(loadPosts)
+  }, [dispatch])
+
+  const allPosts = useSelector(state => state.post.allPosts)
+
+  return <PostList data={allPosts} onOpen={openPostHandler} />
 }
 
-MainScreen.navigationOptions = {
+MainScreen.navigationOptions = ({ navigation }) => ({
   headerTitle: "Мой блог",
   headerRight: () => {
     return (
@@ -33,7 +32,9 @@ MainScreen.navigationOptions = {
         <Item
           title="Take photo"
           iconName="ios-camera"
-          onPress={console.log("Press photo")}
+          onPress={() => {
+            navigation.push("Create")
+          }}
         />
       </HeaderButtons>
     )
@@ -44,15 +45,9 @@ MainScreen.navigationOptions = {
         <Item
           title="Toggle Drawer"
           iconName="ios-menu"
-          onPress={console.log("Press photo")}
+          onPress={() => navigation.toggleDrawer()}
         />
       </HeaderButtons>
     )
-  },
-}
-
-const styles = StyleSheet.create({
-  wrapper: {
-    padding: 10,
   },
 })
